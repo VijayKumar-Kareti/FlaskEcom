@@ -4,7 +4,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Mail, Message
-import base64, imghdr, uuid
+import base64
+import filetype
+import uuid
 from datetime import datetime
 
 
@@ -247,7 +249,8 @@ def edit_product(product_id):
         if 'image' in request.files and request.files['image'].filename:
             file       = request.files['image']
             img_bytes  = file.read()
-            image_type = imghdr.what(None, img_bytes) or 'jpeg'
+            kind = filetype.guess(img_bytes)
+            image_type = kind.extension if kind else "jpeg"
             updates['image_data'] = base64.b64encode(img_bytes).decode('utf-8')
             updates['image_type'] = image_type
 
