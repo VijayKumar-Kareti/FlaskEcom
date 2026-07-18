@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – ShopZone{% endblock %}
+{% block content %}
+<div class="container">
+
+  <!-- Stats Row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:32px;font-weight:700;color:#e94560">{{ products|length }}</div>
+      <div style="color:#888;font-size:14px">Products</div>
+    </div>
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:32px;font-weight:700;color:#28a745">{{ orders|length }}</div>
+      <div style="color:#888;font-size:14px">Total Orders</div>
+    </div>
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:32px;font-weight:700;color:#007bff">
+        ₹{{ orders|sum(attribute='total')|round(2) }}
+      </div>
+      <div style="color:#888;font-size:14px">Revenue</div>
+    </div>
+  </div>
+
+  <!-- Products Section -->
+  <div class="card" style="margin-bottom:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">🛍 Products</h2>
+      <a href="/admin/add_product" class="btn btn-primary btn-sm">+ Add Product</a>
+    </div>
+    {% if products %}
+    <table>
+      <tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+      {% for p in products %}
+      <tr>
+        <td>
+          {% if p.image_data %}
+            <img src="data:image/{{ p.image_type }};base64,{{ p.image_data }}"
+                 style="width:50px;height:50px;object-fit:cover;border-radius:6px">
+          {% else %}
+            <div style="width:50px;height:50px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px">📦</div>
+          {% endif %}
+        </td>
+        <td><strong>{{ p.name }}</strong><br><span style="color:#888;font-size:12px">{{ p.description[:50] }}{% if p.description|length > 50 %}…{% endif %}</span></td>
+        <td>₹{{ p.price }}</td>
+        <td>
+          <span style="padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;
+                background:{% if p.stock > 5 %}#d4edda;color:#155724{% elif p.stock > 0 %}#fff3cd;color:#856404{% else %}#f8d7da;color:#721c24{% endif %}">
+            {{ p.stock }} left
+          </span>
+        </td>
+        <td>
+          <a href="/admin/edit_product/{{ p.id }}" class="btn btn-secondary btn-sm">Edit</a>
+          <form method="POST" action="/admin/delete_product/{{ p.id }}" style="display:inline"
+                onsubmit="return confirm('Delete this product?')">
+            <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+      <p style="text-align:center;color:#aaa;padding:30px">No products yet. <a href="/admin/add_product" style="color:#e94560">Add one!</a></p>
+    {% endif %}
+  </div>
+
+  <!-- Orders Section -->
+  <div class="card">
+    <h2 style="margin-bottom:16px">📦 Recent Orders</h2>
+    {% if orders %}
+    <table>
+      <tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th></tr>
+      {% for o in orders %}
+      <tr>
+        <td style="font-family:monospace;font-size:12px">{{ o.order_id[:8].upper() }}</td>
+        <td>{{ o.user_name }}<br><span style="color:#888;font-size:12px">{{ o.user_email }}</span></td>
+        <td>{{ o['items']|length }} item(s)</td>
+        <td><strong>₹{{ o.total }}</strong></td>
+        <td style="font-size:12px;color:#888">{{ o.created_at.strftime('%d %b %Y') if o.created_at else '—' }}</td>
+        <td>
+          <span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600">
+            {{ o.status|capitalize }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+      <p style="text-align:center;color:#aaa;padding:30px">No orders yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

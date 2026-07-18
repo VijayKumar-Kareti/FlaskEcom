@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Edit Product{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:40px auto;padding:0 20px">
+  <div class="card">
+    <h2>✏️ Edit Product</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <label>Product Name</label>
+      <input type="text" name="name" value="{{ product.name }}" required>
+
+      <label>Description</label>
+      <textarea name="description" rows="3" required style="resize:vertical">{{ product.description }}</textarea>
+
+      <label>Price (₹)</label>
+      <input type="number" name="price" value="{{ product.price }}" step="0.01" min="0" required>
+
+      <label>Stock Quantity</label>
+      <input type="number" name="stock" value="{{ product.stock }}" min="0" required>
+
+      {% if product.image_data %}
+      <div style="margin-bottom:12px">
+        <label>Current Image</label>
+        <img src="data:image/{{ product.image_type }};base64,{{ product.image_data }}"
+             style="width:100px;height:100px;object-fit:cover;border-radius:8px;display:block;margin-top:6px">
+      </div>
+      {% endif %}
+      <label>Replace Image (optional)</label>
+      <input type="file" name="image" accept="image/*" style="border:none;padding:0;margin-bottom:20px">
+
+      <div style="display:flex;gap:12px;margin-top:10px">
+        <button class="btn btn-primary" type="submit">Save Changes</button>
+        <a href="/admin" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

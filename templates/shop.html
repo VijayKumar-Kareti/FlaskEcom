@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Shop – ShopZone{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h2>🛍 All Products</h2>
+    <a href="/cart" class="btn btn-primary">🛒 View Cart</a>
+  </div>
+
+  {% if products %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px">
+    {% for p in products %}
+    <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+      <!-- Image -->
+      <div style="height:180px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        {% if p.image_data %}
+          <img src="data:image/{{ p.image_type }};base64,{{ p.image_data }}"
+               style="width:100%;height:100%;object-fit:cover">
+        {% else %}
+          <span style="font-size:60px">📦</span>
+        {% endif %}
+      </div>
+      <!-- Info -->
+      <div style="padding:16px;flex:1;display:flex;flex-direction:column">
+        <h3 style="font-size:16px;margin-bottom:6px">{{ p.name }}</h3>
+        <p style="color:#888;font-size:13px;flex:1;margin-bottom:12px">{{ p.description[:80] }}{% if p.description|length > 80 %}…{% endif %}</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:20px;font-weight:700;color:#e94560">₹{{ p.price }}</span>
+          <span style="font-size:12px;color:{% if p.stock > 5 %}#28a745{% elif p.stock > 0 %}#ffc107{% else %}#dc3545{% endif %};font-weight:600">
+            {% if p.stock > 0 %}{{ p.stock }} in stock{% else %}Out of stock{% endif %}
+          </span>
+        </div>
+        {% if p.stock > 0 %}
+        <form method="POST" action="/cart/add/{{ p.id }}">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+            <label style="margin:0;font-size:13px">Qty:</label>
+            <input type="number" name="quantity" value="1" min="1" max="{{ p.stock }}"
+                   style="width:60px;padding:5px 8px;margin:0;text-align:center">
+          </div>
+          <button class="btn btn-primary" style="width:100%" type="submit">Add to Cart</button>
+        </form>
+        {% else %}
+        <button class="btn btn-secondary" style="width:100%;opacity:.6" disabled>Out of Stock</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:60px">
+      <p style="font-size:40px;margin-bottom:12px">🏪</p>
+      <p style="color:#aaa">No products available yet. Check back soon!</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

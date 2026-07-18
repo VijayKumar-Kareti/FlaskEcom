@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}My Orders – ShopZone{% endblock %}
+{% block content %}
+<div class="container">
+  <h2 style="margin-bottom:24px">📦 My Orders</h2>
+
+  {% if orders %}
+    {% for o in orders %}
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div>
+          <span style="font-family:monospace;font-weight:700;font-size:15px">
+            #{{ o.order_id[:8].upper() }}
+          </span>
+          <span style="color:#888;font-size:13px;margin-left:12px">
+            {{ o.created_at.strftime('%d %b %Y, %I:%M %p') if o.created_at else '' }}
+          </span>
+        </div>
+        <div>
+          <span style="background:#d4edda;color:#155724;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600">
+            {{ o.status|capitalize }}
+          </span>
+          <span style="margin-left:12px;font-weight:700;font-size:16px;color:#e94560">₹{{ o.total }}</span>
+        </div>
+      </div>
+      <table>
+        <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+        {% for item in o['items'] %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>₹{{ item.price }}</td>
+          <td>₹{{ (item.price * item.quantity)|round(2) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="card" style="text-align:center;padding:60px">
+    <p style="font-size:50px;margin-bottom:16px">📦</p>
+    <p style="color:#888;margin-bottom:20px">You haven't placed any orders yet.</p>
+    <a href="/shop" class="btn btn-primary">Shop Now</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

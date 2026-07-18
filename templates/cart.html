@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}My Cart – ShopZone{% endblock %}
+{% block content %}
+<div class="container">
+  <h2 style="margin-bottom:24px">🛒 My Cart</h2>
+
+  {% if cart %}
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+
+    <!-- Items -->
+    <div class="card">
+      <table>
+        <tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr>
+        {% for item in cart %}
+        <tr>
+          <td><strong>{{ item.name }}</strong></td>
+          <td>₹{{ item.price }}</td>
+          <td>
+            <form method="POST" action="/cart/update/{{ item.product_id }}" style="display:flex;gap:6px;align-items:center">
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                     style="width:60px;padding:5px 8px;margin:0;text-align:center">
+              <button class="btn btn-secondary btn-sm" type="submit">↺</button>
+            </form>
+          </td>
+          <td><strong>₹{{ (item.price * item.quantity)|round(2) }}</strong></td>
+          <td>
+            <form method="POST" action="/cart/remove/{{ item.product_id }}"
+                  onsubmit="return confirm('Remove this item?')">
+              <button class="btn btn-danger btn-sm" type="submit">✕</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="card">
+      <h3 style="margin-bottom:16px">Order Summary</h3>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px">
+        <span>Items ({{ cart|length }})</span>
+        <span>₹{{ total|round(2) }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px">
+        <span>Shipping</span>
+        <span style="color:#28a745">Free</span>
+      </div>
+      <hr style="margin:14px 0;border-color:#eee">
+      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-bottom:20px">
+        <span>Total</span>
+        <span style="color:#e94560">₹{{ total|round(2) }}</span>
+      </div>
+      <form method="POST" action="/checkout"
+            onsubmit="return confirm('Confirm your order of ₹{{ total|round(2) }}?')">
+        <button class="btn btn-success" style="width:100%;font-size:16px" type="submit">
+          ✅ Place Order
+        </button>
+      </form>
+      <a href="/shop" class="btn btn-secondary" style="width:100%;text-align:center;margin-top:10px;display:block">
+        ← Continue Shopping
+      </a>
+    </div>
+
+  </div>
+
+  {% else %}
+  <div class="card" style="text-align:center;padding:60px">
+    <p style="font-size:50px;margin-bottom:16px">🛒</p>
+    <p style="color:#888;margin-bottom:20px">Your cart is empty.</p>
+    <a href="/shop" class="btn btn-primary">Start Shopping</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

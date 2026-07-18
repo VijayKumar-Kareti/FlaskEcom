@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sign Up – ShopZone{% endblock %}
+{% block content %}
+<div style="max-width:420px;margin:60px auto;padding:0 20px">
+  <div class="card">
+    <h2 style="text-align:center">Create Account 🚀</h2>
+    <p style="text-align:center;color:#888;margin-bottom:24px;font-size:14px">Join ShopZone today</p>
+    <form method="POST">
+      <label>Full Name</label>
+      <input type="text" name="name" placeholder="John Doe" required>
+      <label>Email</label>
+      <input type="email" name="email" placeholder="you@example.com" required>
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Min 6 characters" required>
+      <button class="btn btn-primary" style="width:100%;margin-top:6px" type="submit">Create Account</button>
+    </form>
+    <p style="text-align:center;margin-top:18px;font-size:14px;color:#888">
+      Already have an account? <a href="/login" style="color:#e94560;font-weight:600">Login</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
