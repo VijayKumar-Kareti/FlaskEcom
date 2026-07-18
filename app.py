@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import
 import firebase_admin
 from firebase_admin import credentials, firestore
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,15 +7,26 @@ from flask_mail import Mail, Message
 import base64, imghdr, uuid
 from datetime import datetime
 
+
 # ── App Setup ──────────────────────────────────────────────────────────────
 app = Flask(__name__)
-app.secret_key = "replace_with_a_strong_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY")
 
 # ── Firebase ───────────────────────────────────────────────────────────────
 import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cred = credentials.Certificate(os.path.join(BASE_DIR, "serviceAccountKey.json"))
-firebase_admin.initialize_app(cred)
+import json
+
+firebase_credentials = os.environ.get("FIREBASE_CREDENTIALS")
+
+if firebase_credentials:
+    cred_dict = json.loads(firebase_credentials)
+    cred = credentials.Certificate(cred_dict)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    cred = credentials.Certificate(os.path.join(BASE_DIR, "serviceAccountKey.json"))
+
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
 db = firestore.client()
 users_ref    = db.collection("users")
 products_ref = db.collection("products")
@@ -27,9 +39,9 @@ orders_ref   = db.collection("orders")
 app.config['MAIL_SERVER']   = 'smtp.gmail.com'
 app.config['MAIL_PORT']     = 587
 app.config['MAIL_USE_TLS']  = True
-app.config['MAIL_USERNAME'] = 'venkatavijaykumarkareti@gmail.com'        # ← change
-app.config['MAIL_PASSWORD'] = 'nvwv woja zvow fnpf'     # ← change
-app.config['MAIL_DEFAULT_SENDER'] = 'venkatavijaykumarkareti@gmail.com'  # ← change
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME")  # ← change
 mail = Mail(app)
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -400,5 +412,8 @@ def my_orders():
     return render_template('my_orders.html', orders=orders, name=session['name'])
 
 
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
