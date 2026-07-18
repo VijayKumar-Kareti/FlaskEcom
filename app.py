@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import
+import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,7 +10,7 @@ from datetime import datetime
 
 # ── App Setup ──────────────────────────────────────────────────────────────
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
+app.secret_key = os.environ.get("SECRET_KEY", "replace_with_a_strong_secret_key")
 
 # ── Firebase ───────────────────────────────────────────────────────────────
 import os
