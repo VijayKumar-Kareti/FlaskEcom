@@ -396,7 +396,8 @@ def checkout():
     users_ref.document(session['user']).update({'cart': []})
 
     # Send confirmation email
-    email_sent = send_order_email(session['user'], session['name'], order_id, cart, total)
+    email_sent = False
+    #email_sent = send_order_email(session['user'], session['name'], order_id, cart, total)
 
     return render_template('order_success.html',
                            order_id=order_id,
