@@ -3,13 +3,22 @@ import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_mail import Mail, Message
+
+
+import os
 import base64
 import filetype
 import uuid
 import traceback
 from datetime import datetime
+from dotenv import load_dotenv
+import resend
+import os
 
+load_dotenv()
+
+resend.api_key = os.environ.get("RESEND_API_KEY")
+print("API Key:", os.environ.get("RESEND_API_KEY"))
 
 # ── App Setup ──────────────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -39,13 +48,13 @@ orders_ref   = db.collection("orders")
 # Fill in your Gmail and App Password below.
 # To create a Gmail App Password:
 #   Google Account → Security → 2-Step Verification → App Passwords
-app.config['MAIL_SERVER']   = 'smtp.gmail.com'
-app.config['MAIL_PORT']     = 587
-app.config['MAIL_USE_TLS']  = True
-app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
-app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME") # ← change
-mail = Mail(app)
+#app.config['MAIL_SERVER']   = 'smtp.gmail.com'
+#app.config['MAIL_PORT']     = 587
+#app.config['MAIL_USE_TLS']  = True
+#app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+#app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+#app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME") # ← change
+#mail = Mail(app)
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 ADMIN_EMAIL = "venkatavijaykumarkareti@gmail.com"   # The one account that gets admin role
@@ -106,21 +115,22 @@ def send_order_email(user_email, user_name, order_id, items, total):
           <p style="color:#888;font-size:12px;text-align:center">Thank you for your purchase! Questions? Reply to this email.</p>
         </div>"""
 
-        msg = Message(
-            subject=f"Order Confirmation #{order_id[:8].upper()}",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[user_email],
-            html=html_body
-       )
-        mail.send(msg)
+        params = {
+            "from": "ShopZone <onboarding@resend.dev>",
+            "to": [user_email],
+            "subject": f"Order Confirmation #{order_id[:8].upper()}",
+            "html": html_body,
+}
+
+        resend.Emails.send(params)
+
         return True
     
 
-    except Exception:
-        print("\n" + "=" * 60)
-        print("EMAIL ERROR")
-        traceback.print_exc()
-        print("=" * 60)
+    except Exception as e:
+        
+        print("Resend Error:", e)
+        
         
         return False
 
