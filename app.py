@@ -7,6 +7,7 @@ from flask_mail import Mail, Message
 import base64
 import filetype
 import uuid
+import traceback
 from datetime import datetime
 
 
@@ -43,7 +44,7 @@ app.config['MAIL_PORT']     = 587
 app.config['MAIL_USE_TLS']  = True
 app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
 app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME")  # ← change
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_USERNAME") # ← change
 mail = Mail(app)
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -107,13 +108,20 @@ def send_order_email(user_email, user_name, order_id, items, total):
 
         msg = Message(
             subject=f"Order Confirmation #{order_id[:8].upper()}",
+            sender=app.config['MAIL_USERNAME'],
             recipients=[user_email],
             html=html_body
-        )
+       )
         mail.send(msg)
         return True
-    except Exception as e:
-        print(f"Email error: {e}")
+    
+
+    except Exception:
+        print("\n" + "=" * 60)
+        print("EMAIL ERROR")
+        traceback.print_exc()
+        print("=" * 60)
+        
         return False
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -318,6 +326,38 @@ def add_to_cart(product_id):
     flash(f"'{product['name']}' added to cart!", "success")
     return redirect(url_for('shop'))
 
+#----BUY NOW----------------------------------------
+@app.route('/buy_now/<product_id>', methods=['POST'])
+@login_required
+def buy_now(product_id):
+    qty = int(request.form.get('quantity', 1))
+
+    doc = products_ref.document(product_id).get()
+    if not doc.exists:
+        flash("Product not found.", "danger")
+        return redirect(url_for('shop'))
+
+    product = doc.to_dict()
+
+    if product['stock'] < qty:
+        flash("Not enough stock!", "warning")
+        return redirect(url_for('shop'))
+
+    user_doc = users_ref.document(session['user']).get()
+    cart = user_doc.to_dict().get('cart', [])
+
+    # Clear previous cart so only this item is purchased
+    cart = [{
+        'product_id': product_id,
+        'name': product['name'],
+        'price': product['price'],
+        'quantity': qty
+    }]
+
+    users_ref.document(session['user']).update({'cart': cart})
+
+    return redirect(url_for('checkout'))
+
 
 @app.route('/cart')
 @login_required
@@ -354,7 +394,7 @@ def update_cart(product_id):
 
 # ── Checkout / Place Order ─────────────────────────────────────────────────
 
-@app.route('/checkout', methods=['POST'])
+@app.route('/checkout', methods=['POST', 'GET'])
 @login_required
 def checkout():
     user_doc  = users_ref.document(session['user']).get()
@@ -396,8 +436,8 @@ def checkout():
     users_ref.document(session['user']).update({'cart': []})
 
     # Send confirmation email
-    email_sent = False
-    #email_sent = send_order_email(session['user'], session['name'], order_id, cart, total)
+    #email_sent = False
+    email_sent = send_order_email(session['user'], session['name'], order_id, cart, total)
 
     return render_template('order_success.html',
                            order_id=order_id,

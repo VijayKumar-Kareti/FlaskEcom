@@ -37,7 +37,22 @@
             <input type="number" name="quantity" value="1" min="1" max="{{ p.stock }}"
                    style="width:60px;padding:5px 8px;margin:0;text-align:center">
           </div>
-          <button class="btn btn-primary" style="width:100%" type="submit">Add to Cart</button>
+          <div style="display:flex;gap:10px;">
+
+    <button type="submit"
+            class="btn btn-danger"
+            style="flex:1;">
+        🛒 Add to Cart
+    </button>
+
+    <button type="submit"
+            formaction="/buy_now/{{ p.id }}"
+            class="btn btn-success"
+            style="flex:1;">
+        ⚡ Buy Now
+    </button>
+
+</div>
         </form>
         {% else %}
         <button class="btn btn-secondary" style="width:100%;opacity:.6" disabled>Out of Stock</button>
